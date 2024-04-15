@@ -5,6 +5,9 @@ import cors from "cors";
 import mongoose from "mongoose";
 import { fileUpload, upload } from "./fileUpload.js";
 import { File } from "./model/file.model.js";
+import fs from "fs";
+const folderPath = "./uploads";
+import path from "path";
 dotenv.config({});
 const app = express();
 const port = process.env.port;
@@ -27,6 +30,35 @@ app.get("/download/:fileId", async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 });
+
+app.get("/getAllFiles", async (req, res) => {
+  try {
+    let files = await File.find();
+    files = files.map((f) => {
+      return { id: f._id, name: f.name };
+    });
+    res.status(200).json(files);
+  } catch (err) {
+    console.error("Error fetching files:", err.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+setInterval(() => {
+  if (fs.existsSync(folderPath)) {
+    fs.readdirSync(folderPath).forEach((file) => {
+      const filePath = path.join(folderPath, file);
+      if (fs.statSync(filePath).isFile()) {
+        fs.unlinkSync(filePath);
+        console.log(`Deleted ${file}`);
+      }
+    });
+    console.log("All files deleted successfully.");
+  } else {
+    console.log("Folder does not exist.");
+  }
+}, 100000);
+
 mongoose.connect(DB_URI).then(() => {
   console.log("DB Connected");
   app.listen(port, () => {
