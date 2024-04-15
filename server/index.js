@@ -17,6 +17,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.post("/upload", upload.single("file"), fileUpload);
+app.get("/",(req,res)=>{
+  console.log(req.ip);
+})
 app.get("/download/:fileId", async (req, res) => {
   try {
     let { fileId } = req.params;
@@ -57,7 +60,7 @@ setInterval(() => {
   } else {
     console.log("Folder does not exist.");
   }
-}, 100000);
+}, 5 * 60 * 60 * 1000);
 
 mongoose.connect(DB_URI).then(() => {
   console.log("DB Connected");
